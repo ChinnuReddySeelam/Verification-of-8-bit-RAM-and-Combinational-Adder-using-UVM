@@ -1,0 +1,24 @@
+class scoreboard extends uvm_scoreboard;
+`uvm_component_utils(scoreboard)
+uvm_analysis_imp #(transaction,scoreboard) recv;
+reg [7:0] tarr[20] = '{default:0} ;
+function new(input string inst = "SCO", uvm_component c);
+super.new(inst,c);
+recv = new("recv",this);
+endfunction
+virtual function void write(transaction data);                    
+  if(data.wr == 1'b1)
+    begin
+      tarr[data.addr] = data.din;
+      `uvm_info("SCO", $sformatf("MON -> SCO : DATA WRITE OP :  addr :%0d din:%0d ", data.addr,data.din), UVM_NONE);  
+    end 
+  if(data.wr == 1'b0)
+    begin
+      if(data.dout == tarr[data.addr])
+        `uvm_info("SCO", $sformatf("TEST PASSED : DATA READ OP   addr :%0d din:%0d dout:%0d ", data.addr,data.din, data.dout), UVM_NONE)
+      else
+        `uvm_error("SCO", $sformatf("TEST FAILED : DATA READ OP :  addr :%0d din:%0d dout:%0d ", data.addr,data.din, data.dout)) 
+    end
+  $display("--------------------------------------------");
+endfunction
+endclass
